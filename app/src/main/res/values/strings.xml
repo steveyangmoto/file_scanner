@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">FileScanner</string>
+    <string name="start">Start Scan</string>
+    <string name="stop">Stop Scan</string>
+    <string name="analysis_init">Gathering External Storage Information</string>
+    <string name="scanning">Scanning</string>
+    <string name="scan_complete">Scanning Completed</string>
+    <string name="average_file_size">Average file Size: </string>
+    <string name="biggest_file_title">Biggest Files</string>
+    <string name="most_frequent_ext">Most Frequent File Extensions</string>
+    <string name="occured">occurred</string>
+    <string name="times">times</string>
+    <string name="scan_incomplete">Scanning incomplete</string>
+    <string name="file_scanner">File Scanner</string>
+    <string name="scan_started">Scan Started...</string>
+    <string name="file_scan_started">File Scan Started</string>
+    <string name="my_phone_file_stat">My Phone\'s file statistics</string>
+</resources>
