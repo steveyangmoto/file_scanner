@@ -205,4 +205,10 @@ public class MainActivity extends AppCompatActivity implements MainView {
         presenter.stopScan();
     }
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        presenter.destroy();
+    }
+
 }

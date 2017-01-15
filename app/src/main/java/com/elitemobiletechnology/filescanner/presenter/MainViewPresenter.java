@@ -7,4 +7,5 @@ package com.elitemobiletechnology.filescanner.presenter;
 public interface MainViewPresenter {
     void startScan();
     void stopScan();
+    void destroy();
 }

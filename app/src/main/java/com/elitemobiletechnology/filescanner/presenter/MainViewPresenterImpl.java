@@ -71,5 +71,10 @@ public class MainViewPresenterImpl implements MainViewPresenter {
             }
         });
     }
+    @Override
+    public void destroy(){
+        stopScan();
+        handler.removeCallbacksAndMessages(null);
+    }
 
 }
