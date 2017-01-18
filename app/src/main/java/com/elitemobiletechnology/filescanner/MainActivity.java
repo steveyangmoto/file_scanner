@@ -1,14 +1,18 @@
 package com.elitemobiletechnology.filescanner;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
@@ -20,6 +24,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import com.elitemobiletechnology.filescanner.model.ExtStorageInfo;
 import com.elitemobiletechnology.filescanner.model.ExtensionFrequency;
 import com.elitemobiletechnology.filescanner.model.FileSizeInfo;
@@ -32,6 +37,7 @@ import com.elitemobiletechnology.filescanner.view.MainView;
  */
 public class MainActivity extends AppCompatActivity implements MainView {
     private ShareActionProvider mShareActionProvider;
+    private static final int PERMISSION_REQUEST_CODE_READ_EXTERNAL_STORAGE = 1;
     private MenuItem shareMenuItem;
     private Button btScan;
     private ProgressBar progressBar;
@@ -53,7 +59,15 @@ public class MainActivity extends AppCompatActivity implements MainView {
             @Override
             public void onClick(View v) {
                 if (((Button) v).getText().equals(getString(R.string.start))) {
-                    startScan(v);
+                    if (ContextCompat.checkSelfPermission(MainActivity.this,
+                            Manifest.permission.READ_CONTACTS)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                PERMISSION_REQUEST_CODE_READ_EXTERNAL_STORAGE);
+                    }else {
+                        startScan();
+                    }
                 } else {
                     stopScan();
                 }
@@ -114,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements MainView {
                 resultContainer.addView(tv);
                 tv = new TextView(this);
                 tv.setGravity(Gravity.RIGHT);
-                tv.setText(getString(R.string.occured)+" " + extensionFrequency.getFrequency() + " "+getString(R.string.times));
+                tv.setText(getString(R.string.occured) + " " + extensionFrequency.getFrequency() + " " + getString(R.string.times));
                 resultContainer.addView(tv);
             }
         } else {
@@ -171,21 +185,21 @@ public class MainActivity extends AppCompatActivity implements MainView {
         mNotificationManager.notify(0, mBuilder.build());
     }
 
-    private void share(){
-        if(info!=null) {
+    private void share() {
+        if (info != null) {
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
-            StringBuffer shareBody = new StringBuffer(getString(R.string.average_file_size)+info.getAvgFileSize()/1024+" KB\n"+
-                    getString(R.string.biggest_file_title)+"\n");
+            StringBuffer shareBody = new StringBuffer(getString(R.string.average_file_size) + info.getAvgFileSize() / 1024 + " KB\n" +
+                    getString(R.string.biggest_file_title) + "\n");
 
             for (int i = 0; i < info.getBiggestFiles().size() && i < 10; i++) {
                 FileSizeInfo fileSizeInfo = info.getBiggestFiles().get(i);
-                shareBody.append(fileSizeInfo.getName()+" ( "+fileSizeInfo.getSize()/1024+" KB )\n");
+                shareBody.append(fileSizeInfo.getName() + " ( " + fileSizeInfo.getSize() / 1024 + " KB )\n");
             }
-            shareBody.append(getString(R.string.most_frequent_ext)+":\n");
+            shareBody.append(getString(R.string.most_frequent_ext) + ":\n");
             for (int i = 0; i < info.getMostFrequentFileExts().size() && i < 5; i++) {
                 ExtensionFrequency extensionFrequency = info.getMostFrequentFileExts().get(i);
-                shareBody.append(extensionFrequency.getExtensionName()+" "+getString(R.string.occured)+" "+extensionFrequency.getFrequency()+" "+getString(R.string.times)+"\n");
+                shareBody.append(extensionFrequency.getExtensionName() + " " + getString(R.string.occured) + " " + extensionFrequency.getFrequency() + " " + getString(R.string.times) + "\n");
             }
             sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.my_phone_file_stat));
             sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody.toString());
@@ -193,11 +207,26 @@ public class MainActivity extends AppCompatActivity implements MainView {
         }
     }
 
-    private void startScan(View v) {
+    private void startScan() {
         btScan.setText(getString(R.string.stop));
         resultContainer.removeAllViewsInLayout();
         showStartNotification();
         presenter.startScan();
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE_READ_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startScan();
+                }
+                return;
+            }
+        }
     }
 
     private void stopScan() {
@@ -206,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements MainView {
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
         presenter.destroy();
     }

@@ -51,18 +51,19 @@ public class FileAnalyzerImpl implements FileAnalyzer {
             listener.onProgressUpdate(1, MyApplication.getAppContext().getString(R.string.analysis_init));
         }
         totalFileCount = countFiles(rootDir);
+        Log.d("steve", "count: " + totalFileCount);
         if (listener != null) {
-            if(stopCommanded){
+            if (stopCommanded) {
                 listener.onComplete(null);
                 return;
             }
             if (analyzeFile(rootDir, new MyInt(0))) {
-                if(stopCommanded){
+                if (stopCommanded) {
                     listener.onComplete(null);
-                }else {
+                } else {
                     ExtStorageInfo info = new ExtStorageInfo();
                     info.setBiggestFiles(this.biggestFiles);
-                    info.setAvgFileSize(totalSize / totalFileCount);
+                    info.setAvgFileSize(totalFileCount > 0 ? totalSize / totalFileCount : 0);
                     info.setMostFrequentFileExts(getMostFrequentExts());
                     listener.onComplete(info);
                 }
@@ -80,7 +81,7 @@ public class FileAnalyzerImpl implements FileAnalyzer {
     private ArrayList<ExtensionFrequency> getMostFrequentExts() {
         ArrayList<ExtensionFrequency> mostFrequentExts = new ArrayList<>();
         if (fileExtFrequencyMap != null) {
-           Iterator iterator = fileExtFrequencyMap.entrySet().iterator();
+            Iterator iterator = fileExtFrequencyMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry) iterator.next();
                 String extName = (String) entry.getKey();
@@ -102,7 +103,7 @@ public class FileAnalyzerImpl implements FileAnalyzer {
     }
 
     private boolean analyzeFile(File file, MyInt count) {
-        if (file == null||stopCommanded) {
+        if (file == null || stopCommanded) {
             return false;
         }
 
@@ -115,19 +116,19 @@ public class FileAnalyzerImpl implements FileAnalyzer {
             String ext = Utils.getFileType(file.getAbsolutePath());
             if (!TextUtils.isEmpty(ext)) {
                 Integer frequency = fileExtFrequencyMap.get(ext);
-                int fileExtFrequency = frequency == null ? 1 : frequency+1;
+                int fileExtFrequency = frequency == null ? 1 : frequency + 1;
                 fileExtFrequencyMap.put(ext, fileExtFrequency);
             }
             int progress = (int) (count.get() * 1.0 / totalFileCount * 100);
             if (biggestFiles.size() > 0) {
-                for (int i = 0; i < biggestFiles.size() ; i++) {
-                    if(i<10) {
+                for (int i = 0; i < biggestFiles.size(); i++) {
+                    if (i < 10) {
                         FileSizeInfo fileInfo = biggestFiles.get(i);
                         if (size > fileInfo.getSize()) {
                             biggestFiles.add(i, myFileSizeInfo);
                             break;
                         }
-                    }else{
+                    } else {
                         biggestFiles.remove(i);
                     }
                 }
@@ -135,11 +136,11 @@ public class FileAnalyzerImpl implements FileAnalyzer {
                 biggestFiles.add(myFileSizeInfo);
             }
             if (listener != null) {
-                listener.onProgressUpdate(progress<1?1:progress, file.getAbsolutePath());
+                listener.onProgressUpdate(progress < 1 ? 1 : progress, file.getAbsolutePath());
             }
         } else if (file.isDirectory()) {
             File[] dirFiles = file.listFiles();
-            if(dirFiles!=null) {
+            if (dirFiles != null) {
                 for (File dirFile : dirFiles) {
                     analyzeFile(dirFile, count);
                 }
@@ -149,13 +150,15 @@ public class FileAnalyzerImpl implements FileAnalyzer {
     }
 
     private int countFiles(File rootDir) {
-        if(stopCommanded){
+        if (stopCommanded) {
             return 0;
         }
+        Log.d("steve", "file/dir: " + rootDir.getAbsolutePath());
         int count = 0;
-        if(rootDir!=null) {
+        if (rootDir != null) {
             File[] files = rootDir.listFiles();
-            if(files!=null) {
+            Log.d("steve", "files is " + files);
+            if (files != null) {
                 for (File file : files) {
                     if (file.isDirectory()) {
                         count += countFiles(file);
